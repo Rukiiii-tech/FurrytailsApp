@@ -32,7 +32,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'Password reset link sent to your email. Please check your inbox.',
+              'Password HAHAHAreset link sent to your email. Please check your inbox.',
             ),
             duration: Duration(seconds: 5),
           ),
@@ -192,23 +192,29 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             _isLoading
                                 ? const CircularProgressIndicator()
                                 : SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton(
-                                    onPressed: _resetPassword,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFFA6763C),
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 14,
+                                    width: double.infinity,
+                                    child: ElevatedButton(
+                                      onPressed: _resetPassword,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(
+                                          0xFFA6763C,
+                                        ),
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 14,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
+                                        ),
+                                        textStyle: const TextStyle(
+                                          fontSize: 18,
+                                        ),
                                       ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      textStyle: const TextStyle(fontSize: 18),
+                                      child: const Text('Reset Password'),
                                     ),
-                                    child: const Text('Reset Password'),
                                   ),
-                                ),
                           ],
                         ),
                       ),
