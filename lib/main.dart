@@ -1,4 +1,5 @@
-// main.dart
+// main.dart (Full Code)
+
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -11,21 +12,28 @@ import 'package:customerap/login_screen.dart';
 import 'package:customerap/signup_screen.dart';
 import 'package:customerap/home_screen.dart';
 import 'package:customerap/services_screen.dart';
-import 'package:customerap/bookings.dart'; // Still My Bookings
+import 'package:customerap/bookings.dart';
 import 'package:customerap/forgot_password_screen.dart';
 import 'package:customerap/my_pets_screen.dart';
 import 'package:customerap/booking_details_screen.dart';
 import 'package:customerap/notification_screen.dart';
-import 'package:customerap/notification_service.dart'; // The new notification service
+import 'package:customerap/notification_service.dart'; // Imports the service and the global navigatorKey
 
 // Top-level function for background message handling
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   print('Handling a background message: ${message.messageId}');
-  await showLocalNotification(
-    message,
-  ); // Show a local notification using the service
+
+  // Use the NotificationService singleton instance
+  if (message.notification != null) {
+    NotificationService().showNotification(
+      message.hashCode,
+      message.notification!.title ?? 'New Notification',
+      message.notification!.body ?? 'Check your app for details.',
+      payload: message.data['bookingId'], // Pass bookingId for navigation
+    );
+  }
 }
 
 void main() async {
@@ -35,8 +43,8 @@ void main() async {
   // Set the background message handler
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-  // Initialize local notifications
-  await initializeNotifications();
+  // Initialize local notifications using the class init method
+  await NotificationService().init();
 
   runApp(const MyApp());
 }
@@ -84,14 +92,25 @@ class _MyAppState extends State<MyApp> {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('Got a message whilst in the foreground!');
       print('Message data: ${message.data}');
-      showLocalNotification(message); // Show a local pop-up notification
+
+      // Use the NotificationService singleton instance for foreground pop-ups
+      if (message.notification != null) {
+        NotificationService().showNotification(
+          message.hashCode,
+          message.notification!.title ?? 'New Notification',
+          message.notification!.body ?? 'Check your app for details.',
+          payload: message.data['bookingId'], // Pass bookingId for navigation
+        );
+      }
     });
 
     // Handle taps on notifications when the app is in the background or terminated
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       print('A new onMessageOpenedApp event was published!');
+
       if (message.data.containsKey('bookingId') &&
           message.data['bookingId'] != null) {
+        // Navigation uses the global navigatorKey from notification_service.dart
         navigatorKey.currentState?.push(
           MaterialPageRoute(
             builder: (context) =>
@@ -119,8 +138,9 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    // Ensure navigatorKey is passed to the MaterialApp
     return MaterialApp(
-      navigatorKey: navigatorKey, // Use the global key for navigation
+      navigatorKey: navigatorKey,
       title: 'Furry Tails',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
@@ -133,7 +153,7 @@ class _MyAppState extends State<MyApp> {
         '/signup': (context) => const SignUpScreen(),
         '/home_screen': (context) => const HomeScreen(),
         '/services_screen': (context) => const ServicesScreen(),
-        '/bookings': (context) => const PetsScreen(), // Corrected route name
+        '/bookings': (context) => const PetsScreen(),
         '/forgot_password': (context) => const ForgotPasswordScreen(),
         '/my_pets_screen': (context) => const MyPetsScreen(),
         '/notification_screen': (context) => const NotificationScreen(),

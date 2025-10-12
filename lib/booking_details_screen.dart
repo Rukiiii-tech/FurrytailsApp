@@ -26,6 +26,7 @@ extension on _BookingDetailsScreenState {
   Future<String?> _uploadImageToCloudinary(File? imageFile) async {
     if (imageFile == null) return null;
     if (_cloudinaryCloudName.isEmpty || _cloudinaryUploadPreset.isEmpty) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Cloudinary is not configured.')),
       );
@@ -46,6 +47,7 @@ extension on _BookingDetailsScreenState {
         return result['secure_url'] as String?;
       } else {
         final err = await response.stream.bytesToString();
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Image upload failed: ${response.statusCode} $err'),
@@ -54,6 +56,7 @@ extension on _BookingDetailsScreenState {
         return null;
       }
     } catch (e) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Image upload error: $e')));
@@ -61,6 +64,7 @@ extension on _BookingDetailsScreenState {
     }
   }
 
+  // Existing _showUpdateDialog method remains here...
   Future<void> _showUpdateDialog(Map<String, dynamic> bookingData) async {
     final String serviceType = bookingData['serviceType'] ?? 'N/A';
     final Map<String, dynamic> boardingDetails =
@@ -168,6 +172,7 @@ extension on _BookingDetailsScreenState {
         initialTime: TimeOfDay.now(),
       );
       if (picked != null) {
+        // ignore: use_build_context_synchronously
         controller.text = picked.format(context);
       }
     }
@@ -239,7 +244,7 @@ extension on _BookingDetailsScreenState {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Text(
+                  const Text(
                     'Vaccination Record',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
@@ -350,7 +355,7 @@ extension on _BookingDetailsScreenState {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Text(
+                  const Text(
                     'Feeding Details',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
@@ -376,6 +381,8 @@ extension on _BookingDetailsScreenState {
                     title: const Text('Morning Feeding'),
                     value: morningFeeding,
                     onChanged: (v) {
+                      // ignore: use_build_context_synchronously
+                      (ctx as Element).markNeedsBuild();
                       morningFeeding = v;
                     },
                   ),
@@ -404,6 +411,8 @@ extension on _BookingDetailsScreenState {
                     title: const Text('Afternoon Feeding'),
                     value: afternoonFeeding,
                     onChanged: (v) {
+                      // ignore: use_build_context_synchronously
+                      (ctx as Element).markNeedsBuild();
                       afternoonFeeding = v;
                     },
                   ),
@@ -432,6 +441,8 @@ extension on _BookingDetailsScreenState {
                     title: const Text('Evening Feeding'),
                     value: eveningFeeding,
                     onChanged: (v) {
+                      // ignore: use_build_context_synchronously
+                      (ctx as Element).markNeedsBuild();
                       eveningFeeding = v;
                     },
                   ),
@@ -461,6 +472,8 @@ extension on _BookingDetailsScreenState {
                     title: const Text('Agree to Boarding Waiver'),
                     value: boardingWaiverAgreed,
                     onChanged: (v) {
+                      // ignore: use_build_context_synchronously
+                      (ctx as Element).markNeedsBuild();
                       boardingWaiverAgreed = v;
                     },
                   ),
@@ -473,7 +486,11 @@ extension on _BookingDetailsScreenState {
                       DropdownMenuItem(value: 'UB', child: Text('UB')),
                       DropdownMenuItem(value: 'GCASH', child: Text('GCASH')),
                     ],
-                    onChanged: (v) => selectedPaymentMethod = v,
+                    onChanged: (v) {
+                      // ignore: use_build_context_synchronously
+                      (ctx as Element).markNeedsBuild();
+                      selectedPaymentMethod = v;
+                    },
                     decoration: const InputDecoration(
                       labelText: 'Payment Method',
                       prefixIcon: Icon(Icons.payment),
@@ -503,6 +520,8 @@ extension on _BookingDetailsScreenState {
                     title: const Text('Agree to Grooming Waiver'),
                     value: groomingWaiverAgreed,
                     onChanged: (v) {
+                      // ignore: use_build_context_synchronously
+                      (ctx as Element).markNeedsBuild();
                       groomingWaiverAgreed = v;
                     },
                   ),
@@ -524,6 +543,7 @@ extension on _BookingDetailsScreenState {
                         (checkOutController.text.trim().isEmpty ||
                             (selectedRoomType == null ||
                                 selectedRoomType!.isEmpty)))) {
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Please fill all required fields.'),
@@ -531,13 +551,13 @@ extension on _BookingDetailsScreenState {
                   );
                   return;
                 }
-
                 // Optional date consistency check for boarding
                 if (serviceType == 'Boarding') {
                   try {
                     final inDate = DateTime.parse(checkInController.text);
                     final outDate = DateTime.parse(checkOutController.text);
                     if (outDate.isBefore(inDate)) {
+                      // ignore: use_build_context_synchronously
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(
@@ -549,7 +569,7 @@ extension on _BookingDetailsScreenState {
                     }
                   } catch (_) {}
                 }
-
+                // ignore: use_build_context_synchronously
                 Navigator.of(ctx).pop();
                 setState(() => _isLoading = true);
                 try {
@@ -610,10 +630,10 @@ extension on _BookingDetailsScreenState {
                     updateData['groomingDetails.groomingWaiverAgreed'] =
                         groomingWaiverAgreed;
                   }
-
                   // Upload vaccination image if newly picked
                   String? uploadedVaccinationUrl;
                   if (vaccinationImageFile != null) {
+                    // ignore: use_build_context_synchronously
                     uploadedVaccinationUrl = await _uploadImageToCloudinary(
                       vaccinationImageFile,
                     );
@@ -621,7 +641,6 @@ extension on _BookingDetailsScreenState {
                       throw Exception('Vaccination image upload failed');
                     }
                   }
-
                   if (uploadedVaccinationUrl != null) {
                     updateData['vaccinationRecord.imageUrl'] =
                         uploadedVaccinationUrl;
@@ -629,7 +648,6 @@ extension on _BookingDetailsScreenState {
                     // Explicitly cleared in dialog
                     updateData['vaccinationRecord.imageUrl'] = '';
                   }
-
                   // Ensure status reflects completeness vs. missing vaccination
                   final String newVaccinationUrl =
                       (uploadedVaccinationUrl ?? vaccinationImageUrl ?? '')
@@ -647,12 +665,10 @@ extension on _BookingDetailsScreenState {
                     }
                     updateData['pendingReason'] = FieldValue.delete();
                   }
-
                   await _firestore
                       .collection('bookings')
                       .doc(widget.bookingId)
                       .update(updateData);
-
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -688,10 +704,48 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
   bool _isLoading = true;
   String _currentBookingStatus = '';
 
+  // *** FIX 1: Add the excluded statuses list to control button visibility ***
+  // CORRECTED: Changed 'Checked In' to 'Check In' to match the status in the screenshot.
+  final List<String> _excludedEditStatuses = const [
+    'Check In',
+    'Checked Out',
+    'Feeding Schedule',
+    'Completed',
+    'Cancelled',
+    'Rejected',
+  ];
+  // *** END FIX 1 ***
+
   @override
   void initState() {
     super.initState();
     _fetchBookingDetails();
+  }
+
+  Stream<String?> _getFacilitatorImageStream() {
+    if (widget.bookingId.isEmpty) return Stream.value(null);
+    try {
+      // Query feedingHistory using bookingId, order by scheduledAt (or a reliable timestamp field)
+      return _firestore
+          .collection('feedingHistory') // <--- Correct collection
+          .where('bookingId', isEqualTo: widget.bookingId)
+          .orderBy(
+            'scheduledAt',
+            descending: true,
+          ) // Assuming 'scheduledAt' is a reliable timestamp to get the latest
+          .limit(1)
+          .snapshots() // Use snapshots() for real-time updates
+          .map((snapshot) {
+            if (snapshot.docs.isNotEmpty) {
+              return snapshot.docs.first.data()['photoUrl'] as String?;
+            }
+            // If no document is found or the photoUrl field is missing/deleted, return null
+            return null;
+          });
+    } catch (e) {
+      print('Error setting up facilitator image stream: $e');
+      return Stream.value(null);
+    }
   }
 
   Future<void> _fetchBookingDetails() async {
@@ -700,9 +754,11 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
           .collection('bookings')
           .doc(widget.bookingId)
           .get();
+
       if (mounted) {
         setState(() {
           _bookingDoc = doc;
+          // Ensure _currentBookingStatus is updated from the fetched document
           _currentBookingStatus =
               (_bookingDoc?.data() as Map<String, dynamic>?)?['status'] ?? '';
           _isLoading = false;
@@ -750,7 +806,6 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
       try {
         await _firestore.collection('bookings').doc(widget.bookingId).update({
           'status': 'Cancelled',
-          // FIX 1: Corrected DateFormat pattern from 'MMM dd, encamp hh:mm a'
           'adminNotes':
               'Cancelled by user at ${DateFormat('MMM dd, yyyy hh:mm a').format(DateTime.now())}',
         });
@@ -774,6 +829,241 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
         }
       }
     }
+  }
+
+  // MODIFIED: Reusable function to show a full-screen zoomable image dialog
+  void _showZoomableImageDialog(BuildContext context, String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(10),
+          child: GestureDetector(
+            onTap: () => Navigator.of(context).pop(), // Tap anywhere to dismiss
+            child: Container(
+              width: double.infinity,
+              height: double.infinity,
+              color: Colors.black.withOpacity(0.9),
+              child: Center(
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.contain,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Center(
+                      child: CircularProgressIndicator(
+                        value: loadingProgress.expectedTotalBytes != null
+                            ? loadingProgress.cumulativeBytesLoaded /
+                                  loadingProgress.expectedTotalBytes!
+                            : null,
+                        color: Colors.white,
+                      ),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: Colors.red.withOpacity(0.3),
+                      child: const Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            color: Colors.white,
+                            size: 80,
+                          ),
+                          SizedBox(height: 10),
+                          Text(
+                            'Image failed to load.',
+                            style: TextStyle(color: Colors.white, fontSize: 16),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // MODIFIED: Helper widget for displaying images (like vaccination record)
+  Widget _buildImageDisplay(String? imageUrl, String title) {
+    if (imageUrl == null || imageUrl.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 8.0, bottom: 15.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.red[700],
+              ),
+            ),
+            const SizedBox(height: 5),
+            const Text(
+              'No image available.',
+              style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
+            ),
+          ],
+        ),
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.only(top: 8.0, bottom: 15.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.blue[700],
+            ),
+          ),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: GestureDetector(
+              onTap: () {
+                _showZoomableImageDialog(context, imageUrl);
+              },
+              child: Image.network(
+                imageUrl,
+                height: 150, // Fixed height for display in card
+                width: double.infinity, // Use full width in card
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Column(
+                    children: [
+                      Icon(Icons.broken_image, color: Colors.red, size: 50),
+                      Text(
+                        'Image failed to load.',
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // MODIFIED: Helper widget to build a single feeding history item
+  // Image is now wide and placed below the date/time/food details.
+  Widget _buildFeedingHistoryItem(
+    String petName,
+    String time,
+    String foodBrand,
+    String? photoUrl,
+  ) {
+    return Card(
+      margin: const EdgeInsets.only(
+        bottom: 16.0,
+      ), // Increased spacing below each item
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Time and Food Info
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      time,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepOrange,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Fed $petName',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+                // Status icon placeholder
+                const Icon(Icons.check_circle_outline, color: Colors.green),
+              ],
+            ),
+
+            // --- Divider before image ---
+            const SizedBox(height: 12),
+
+            // Photo Display (Below time, now wide with Click-to-Zoom)
+            if (photoUrl != null && photoUrl.isNotEmpty)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Photo Confirmation (Tap to Zoom):',
+                    style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+                  ),
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: () {
+                      _showZoomableImageDialog(
+                        context,
+                        photoUrl,
+                      ); // Click to zoom
+                    },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8.0),
+                      child: Image.network(
+                        photoUrl,
+                        height: 180, // Increased height for wide display
+                        width:
+                            double.infinity, // Made wide (full width of card)
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 180,
+                            width: double.infinity,
+                            color: Colors.red[100],
+                            child: const Center(child: Text('Load Error')),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            else
+              const Padding(
+                padding: EdgeInsets.only(top: 8.0),
+                child: Chip(
+                  label: Text(
+                    'No Photo Record',
+                    style: TextStyle(color: Colors.black54),
+                  ),
+                  avatar: Icon(Icons.camera_alt_outlined, size: 18),
+                  backgroundColor: Colors.amber,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -802,555 +1092,329 @@ class _BookingDetailsScreenState extends State<BookingDetailsScreen> {
 
     final bookingData = _bookingDoc!.data() as Map<String, dynamic>;
 
-    // Extracting main booking details
-    final String serviceType = bookingData['serviceType'] ?? 'N/A';
-    final String status = bookingData['status'] ?? 'Unknown';
-    final String pendingReasonRaw = bookingData['pendingReason'] ?? '';
-    // Vaccination presence influences incomplete state
-    final Map<String, dynamic> vaccinationRecordForHeader =
-        bookingData['vaccinationRecord'] ?? {};
-    final String vaccinationImageUrlForHeader =
-        vaccinationRecordForHeader['imageUrl'] ?? '';
-    final bool missingVaccination =
-        status == 'Pending' && (vaccinationImageUrlForHeader.isEmpty);
-    final String effectivePendingReason = pendingReasonRaw.isNotEmpty
-        ? pendingReasonRaw
-        : (missingVaccination ? 'Missing vaccination record' : '');
+    // Data extraction variables
+    final serviceType = bookingData['serviceType'] ?? 'N/A';
+    final foodBrand = bookingData['feedingDetails']?['foodBrand'] ?? 'N/A';
+    final mealsPerDay =
+        bookingData['feedingDetails']?['numberOfMeals'] ?? 'N/A';
+    final morningTime = bookingData['feedingDetails']?['morningTime'] ?? '';
+    final morningGrams =
+        bookingData['feedingDetails']?['morningFoodGrams'] ?? '';
+    final afternoonTime = bookingData['feedingDetails']?['afternoonTime'] ?? '';
+    final afternoonGrams =
+        bookingData['feedingDetails']?['afternoonFoodGrams'] ?? '';
+    final eveningTime = bookingData['feedingDetails']?['eveningTime'] ?? '';
+    final eveningGrams =
+        bookingData['feedingDetails']?['eveningFoodGrams'] ?? '';
+    final vaccinationRecordImageUrl =
+        bookingData['vaccinationRecord']?['imageUrl'] as String?;
+    final pendingReason = bookingData['pendingReason'] as String?;
+    final downPaymentAmount =
+        bookingData['paymentDetails']?['downPaymentAmount'];
+    final referenceNumber =
+        bookingData['paymentDetails']?['referenceNumber'] ?? 'N/A';
+    final paymentMethod = bookingData['paymentDetails']?['method'] ?? 'N/A';
+    final petName = bookingData['petName'] ?? 'Your Pet';
 
-    // FIX START: Corrected display logic to prevent hardcoding '(Reschedule)'
-    // The display status should only show the core status (e.g., 'Approved').
-    final String displayStatus =
-        status == 'Pending' && effectivePendingReason.isNotEmpty
-        ? 'Pending (Incomplete)'
-        : status; // Use the raw status for all other cases
-    // FIX END
+    // Get the current status for conditional checks
+    final status = _currentBookingStatus;
 
-    final Timestamp? timestamp = bookingData['timestamp'] as Timestamp?;
-    final String bookingTime = bookingData['time'] ?? 'N/A';
-    // FIX: More robust handling for adminNotes
-    final dynamic rawAdminNotes = bookingData['adminNotes'];
-    String adminNotes = 'N/A';
-    if (rawAdminNotes != null) {
-      if (rawAdminNotes is List) {
-        adminNotes = rawAdminNotes.join('\n');
-      } else if (rawAdminNotes is String) {
-        adminNotes = rawAdminNotes;
-      }
+    // *** FIX 2: Define conditional flags in build method ***
+    // 1. Logic to determine if editing is allowed. This is false for Checked In/Out/Completed/Cancelled/Rejected.
+    final bool canEdit = !_excludedEditStatuses.contains(status);
+
+    // 2. Logic to determine if cancellation is allowed.
+    // It must be generally editable (canEdit = true) AND not already Cancelled/Rejected.
+    // This allows cancellation for Accepted/Pending, but blocks it for Checked In.
+    final bool canCancel =
+        canEdit && !['Cancelled', 'Rejected'].contains(status);
+    // *** END FIX 2 ***
+
+    // Booking Details Section
+    Widget _buildDetailRow(String label, String value) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              '$label: ',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Expanded(child: Text(value)),
+          ],
+        ),
+      );
     }
-
-    // Extracting nested owner information
-    final Map<String, dynamic> ownerInfo =
-        bookingData['ownerInformation'] ?? {};
-    final String ownerFirstName = ownerInfo['firstName'] ?? 'N/A';
-    final String ownerLastName = ownerInfo['lastName'] ?? 'N/A';
-    final String ownerEmail = ownerInfo['email'] ?? 'N/A';
-    final String ownerContactNo = ownerInfo['contactNo'] ?? 'N/A';
-    final String ownerAddress = ownerInfo['address'] ?? 'N/A';
-
-    // Extracting nested pet information
-    final Map<String, dynamic> petInfo = bookingData['petInformation'] ?? {};
-    final String petName = petInfo['petName'] ?? 'N/A';
-    final String petType = petInfo['petType'] ?? 'N/A';
-    final String petBreed = petInfo['petBreed'] ?? 'N/A';
-    final String petGender = petInfo['petGender'] ?? 'N/A';
-    final String petWeight = petInfo['petWeight'] ?? 'N/A';
-    final String petDateOfBirth = petInfo['dateOfBirth'] ?? 'N/A';
-    final String petProfileImageUrl = petInfo['petProfileImageUrl'] ?? '';
-
-    // Extracting nested feeding details (might be present for Boarding)
-    final Map<String, dynamic> feedingDetails =
-        bookingData['feedingDetails'] ?? {};
-    final String foodBrand = feedingDetails['foodBrand'] ?? 'N/A';
-    final String numberOfMeals = feedingDetails['numberOfMeals'] ?? 'N/A';
-    final bool morningFeeding = feedingDetails['morningFeeding'] ?? false;
-    final String morningTime = feedingDetails['morningTime'] ?? 'N/A';
-    final String morningFoodGrams =
-        feedingDetails['morningFoodGrams'] ?? 'N/A'; // New: Morning Food Grams
-    final bool afternoonFeeding = feedingDetails['afternoonFeeding'] ?? false;
-    final String afternoonTime = feedingDetails['afternoonTime'] ?? 'N/A';
-    final String afternoonFoodGrams =
-        feedingDetails['afternoonFoodGrams'] ??
-        'N/A'; // New: Afternoon Food Grams
-    final bool eveningFeeding = feedingDetails['eveningFeeding'] ?? false;
-    final String eveningTime = feedingDetails['eveningTime'] ?? 'N/A';
-    final String eveningFoodGrams =
-        feedingDetails['eveningFoodGrams'] ?? 'N/A'; // New: Evening Food Grams
-
-    // Extracting nested vaccination record details
-    final Map<String, dynamic> vaccinationRecord =
-        bookingData['vaccinationRecord'] ?? {};
-    final String vaccinationImageUrl = vaccinationRecord['imageUrl'] ?? '';
-
-    // Extracting nested payment details (might be present for Boarding)
-    final Map<String, dynamic> paymentDetails =
-        bookingData['paymentDetails'] ?? {};
-    final String paymentMethod = paymentDetails['method'] ?? 'N/A';
-    final String accountNumber = paymentDetails['accountNumber'] ?? 'N/A';
-    final String accountName = paymentDetails['accountName'] ?? 'N/A';
-    final String receiptImageUrl = paymentDetails['receiptImageUrl'] ?? '';
-
-    // Extracting nested boarding details
-    final Map<String, dynamic> boardingDetails =
-        bookingData['boardingDetails'] ?? {};
-    final String checkInDateBoarding = boardingDetails['checkInDate'] ?? 'N/A';
-    final String checkOutDateBoarding =
-        boardingDetails['checkOutDate'] ?? 'N/A';
-    final String selectedRoomType =
-        boardingDetails['selectedRoomType'] ?? 'N/A';
-    final bool boardingWaiverAgreed =
-        boardingDetails['boardingWaiverAgreed'] ?? false;
-
-    // Extracting nested grooming details
-    final Map<String, dynamic> groomingDetails =
-        bookingData['groomingDetails'] ?? {};
-    final String groomingCheckInDate =
-        groomingDetails['groomingCheckInDate'] ?? 'N/A';
-    final bool groomingWaiverAgreed =
-        groomingDetails['groomingWaiverAgreed'] ?? false;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Booking Details'),
         backgroundColor: Colors.orange.shade300,
         foregroundColor: Colors.black87,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header: Pet Name and Status
+            // Booking Status Card (Existing)
+            Card(
+              elevation: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Booking Status',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.teal,
+                          ),
+                        ),
+                        Icon(
+                          status == 'Accepted' || status == 'Approved'
+                              ? Icons.check_circle_outline
+                              : status == 'Pending'
+                              ? Icons.pending
+                              : Icons.cancel,
+                          color: status == 'Accepted' || status == 'Approved'
+                              ? Colors.green
+                              : status == 'Pending'
+                              ? Colors.orange
+                              : Colors.red,
+                        ),
+                      ],
+                    ),
+                    const Divider(),
+                    _buildDetailRow('Status', status),
+                    if (pendingReason != null && pendingReason.isNotEmpty)
+                      _buildDetailRow('Reason', pendingReason!),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 15),
+
+            // --- Action Buttons (Conditional Visibility FIX) ---
             Row(
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundColor: Colors.orange.shade100,
-                  // FIX: Direct NetworkImage if URL exists, else null
-                  backgroundImage: petProfileImageUrl.isNotEmpty
-                      ? NetworkImage(petProfileImageUrl)
-                      : null,
-                  child: petProfileImageUrl.isEmpty
-                      ? Icon(
-                          Icons.pets,
-                          color: Colors.orange.shade700,
-                          size: 24,
-                        )
-                      : null,
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  petName,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.orange.shade700,
-                  ),
-                ),
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: status == 'Accepted' || status == 'Approved'
-                        ? Colors.green.shade100
-                        : status == 'Pending'
-                        ? Colors.orange.shade100
-                        : status == 'Rejected'
-                        ? Colors.red.shade100
-                        : status == 'Cancelled'
-                        ? Colors
-                              .red
-                              .shade100 // Consistent color for cancelled
-                        : Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: status == 'Accepted' || status == 'Approved'
-                          ? Colors.green.shade700
-                          : status == 'Pending'
-                          ? Colors.orange.shade700
-                          : status == 'Rejected'
-                          ? Colors.red.shade700
-                          : status == 'Cancelled'
-                          ? Colors
-                                .red
-                                .shade700 // Consistent color for cancelled
-                          : Colors.grey.shade700,
+                // *** FIX 3: Apply canCancel condition to Cancel button ***
+                if (canCancel)
+                  OutlinedButton.icon(
+                    onPressed: _cancelBooking,
+                    icon: const Icon(Icons.cancel, color: Colors.red),
+                    label: const Text('Cancel Booking'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor:
+                          Colors.red, // Sets text/icon color to red
+                      side: const BorderSide(
+                        color: Colors.red,
+                        width: 1.5,
+                      ), // The visible frame
                     ),
                   ),
-                  child: Text(
-                    displayStatus,
-                    style: TextStyle(
-                      color: status == 'Accepted' || status == 'Approved'
-                          ? Colors.green.shade700
-                          : status == 'Pending'
-                          ? Colors.orange.shade700
-                          : status == 'Rejected'
-                          ? Colors.red.shade700
-                          : status == 'Cancelled'
-                          ? Colors.red.shade700
-                          : Colors.grey.shade700,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Main Booking Information
-            _buildInfoCard(
-              title: 'Booking Overview',
-              icon: Icons.info_outline,
-              children: [
-                _buildDetailRow('Booking ID:', widget.bookingId),
-                _buildDetailRow('Service Type:', serviceType),
-                _buildDetailRow(
-                  'Submitted On:',
-                  timestamp != null
-                      ? DateFormat(
-                          'MMM dd, yyyy hh:mm a',
-                        ).format(timestamp.toDate())
-                      : 'N/A',
-                ),
-                _buildDetailRow('Booking Time:', bookingTime),
-                _buildDetailRow('Admin Notes:', adminNotes),
-                if (status == 'Pending' && effectivePendingReason.isNotEmpty)
-                  _buildDetailRow('Pending For:', effectivePendingReason),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Owner Information Card
-            _buildInfoCard(
-              title: 'Owner Information',
-              icon: Icons.person,
-              children: [
-                _buildDetailRow('First Name:', ownerFirstName),
-                _buildDetailRow('Last Name:', ownerLastName),
-                _buildDetailRow('Email:', ownerEmail),
-                _buildDetailRow('Contact No:', ownerContactNo),
-                _buildDetailRow('Address:', ownerAddress),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Pet Information Card
-            _buildInfoCard(
-              title: 'Pet Information',
-              icon: Icons.pets,
-              children: [
-                _buildDetailRow('Pet Name:', petName),
-                _buildDetailRow('Pet Type:', petType),
-                _buildDetailRow('Breed:', petBreed),
-                _buildDetailRow('Gender:', petGender),
-                _buildDetailRow('Weight:', '$petWeight kg'),
-                _buildDetailRow('Date of Birth:', petDateOfBirth),
-                if (petProfileImageUrl.isNotEmpty)
-                  _buildImageRow('Pet Profile Image:', petProfileImageUrl),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Service Type Specific Details
-            if (serviceType == 'Boarding') ...[
-              _buildInfoCard(
-                title: 'Boarding Details',
-                icon: Icons.hotel,
-                children: [
-                  _buildDetailRow('Check-in Date:', checkInDateBoarding),
-                  _buildDetailRow('Check-out Date:', checkOutDateBoarding),
-                  _buildDetailRow('Room Type:', selectedRoomType),
-                  _buildDetailRow(
-                    'Waiver Agreed:',
-                    boardingWaiverAgreed ? 'Yes' : 'No',
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              _buildInfoCard(
-                title: 'Feeding Details',
-                icon: Icons.fastfood,
-                children: [
-                  _buildDetailRow('Food Brand:', foodBrand),
-                  _buildDetailRow('Meals per day:', numberOfMeals),
-                  if (morningFeeding) ...[
-                    _buildDetailRow('Morning Feed:', morningTime),
-                    _buildDetailRow(
-                      'Morning Food Grams:',
-                      '$morningFoodGrams grams',
-                    ),
-                  ],
-                  if (afternoonFeeding) ...[
-                    _buildDetailRow('Afternoon Feed:', afternoonTime),
-                    _buildDetailRow(
-                      'Afternoon Food Grams:',
-                      '$afternoonFoodGrams grams',
-                    ),
-                  ],
-                  if (eveningFeeding) ...[
-                    _buildDetailRow('Evening Feed:', eveningTime),
-                    _buildDetailRow(
-                      'Evening Food Grams:',
-                      '$eveningFoodGrams grams',
-                    ),
-                  ],
-                ],
-              ),
-              const SizedBox(height: 20),
-              _buildInfoCard(
-                title: 'Payment Details',
-                icon: Icons.payment,
-                children: [
-                  _buildDetailRow('Method:', paymentMethod),
-                  _buildDetailRow('Account Number:', accountNumber),
-                  _buildDetailRow('Account Name:', accountName),
-                  if (receiptImageUrl.isNotEmpty)
-                    _buildImageRow('Receipt Image:', receiptImageUrl),
-                ],
-              ),
-              const SizedBox(height: 20),
-            ] else if (serviceType == 'Grooming') ...[
-              _buildInfoCard(
-                title: 'Grooming Details',
-                icon: Icons.clean_hands,
-                children: [
-                  _buildDetailRow('Check-in Date:', groomingCheckInDate),
-                  _buildDetailRow(
-                    'Waiver Agreed:',
-                    groomingWaiverAgreed ? 'Yes' : 'No',
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-            ],
-
-            // Vaccination Record (common for both, but might be explicitly saved)
-            _buildInfoCard(
-              title: 'Vaccination Record',
-              icon: Icons.medical_services,
-              children: [
-                if (vaccinationImageUrl.isNotEmpty)
-                  _buildImageRow(
-                    'Vaccination Record Image:',
-                    vaccinationImageUrl,
-                  )
-                else
-                  _buildDetailRow(
-                    'Status:',
-                    'Not provided for this booking (or linked from profile).',
-                  ),
-              ],
-            ),
-            const SizedBox(height: 30),
-
-            // Action Buttons: Update and Cancel
-            // FIX 2: Added 'Approved' status to allow rescheduling/updates
-            if ((_currentBookingStatus == 'Pending' ||
-                    _currentBookingStatus == 'Accepted' ||
-                    _currentBookingStatus == 'Approved') &&
-                !_isLoading) ...[
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () => _showUpdateDialog(bookingData),
-                      icon: const Icon(Icons.edit, color: Colors.white),
-                      label: const Text('Update Booking'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange.shade700,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
-                        textStyle: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: _cancelBooking,
-                      icon: const Icon(Icons.cancel, color: Colors.white),
-                      label: const Text('Cancel Booking'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red.shade700,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
-                        textStyle: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Helper for consistent detail rows
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120, // Fixed width for labels for alignment
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontWeight: FontWeight.w500,
-                color: Colors.black87,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(value, style: const TextStyle(color: Colors.black54)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Helper to build a card for a section of information
-  Widget _buildInfoCard({
-    required String title,
-    required IconData icon,
-    required List<Widget> children,
-  }) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, color: Colors.orange.shade700),
                 const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.orange.shade700,
+                // *** FIX 4: Apply canEdit condition to Edit button ***
+                if (canEdit)
+                  ElevatedButton.icon(
+                    onPressed: () => _showUpdateDialog(bookingData),
+                    icon: const Icon(Icons.edit),
+                    label: const Text('Edit Booking'),
                   ),
-                ),
               ],
             ),
-            const Divider(),
-            ...children, // Spread the list of detail rows or other widgets
-          ],
-        ),
-      ),
-    );
-  }
+            const SizedBox(height: 20),
 
-  // Helper to build a row that displays an image from a URL
-  Widget _buildImageRow(String label, String imageUrl) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontWeight: FontWeight.w500,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Center(
-            child: GestureDetector(
-              onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (ctx) => Dialog(
-                    backgroundColor: Colors.transparent,
-                    insetPadding: const EdgeInsets.all(10),
-                    child: GestureDetector(
-                      onTap: () => Navigator.pop(ctx),
-                      child: Image.network(
-                        imageUrl,
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.broken_image,
-                                  color: Colors.white,
-                                  size: 80,
+            // Feeding History Section (For Customer Monitoring)
+            if (serviceType == 'Boarding')
+              Card(
+                elevation: 4,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Feeding History & Updates',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blueGrey,
+                        ),
+                      ),
+                      const Divider(),
+                      StreamBuilder<QuerySnapshot>(
+                        stream: _firestore
+                            .collection('feedingHistory')
+                            .where('bookingId', isEqualTo: widget.bookingId)
+                            .orderBy('scheduledAt', descending: true)
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                          if (snapshot.hasError) {
+                            return Text(
+                              'Error loading history: ${snapshot.error}',
+                            );
+                          }
+                          if (!snapshot.hasData ||
+                              snapshot.data!.docs.isEmpty) {
+                            return const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text(
+                                'No feeding records available yet.',
+                                style: TextStyle(
+                                  fontStyle: FontStyle.italic,
+                                  color: Colors.grey,
                                 ),
-                                const SizedBox(height: 10),
-                                const Text(
-                                  'Image failed to load.',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                            );
+                          }
+
+                          return ListView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: snapshot.data!.docs.length,
+                            itemBuilder: (context, index) {
+                              final doc = snapshot.data!.docs[index];
+                              final data = doc.data() as Map<String, dynamic>;
+
+                              // Format the scheduled time
+                              String scheduledTime = 'N/A';
+                              if (data.containsKey('scheduledAt') &&
+                                  data['scheduledAt'] is Timestamp) {
+                                scheduledTime = DateFormat('MMM d, hh:mm a')
+                                    .format(
+                                      (data['scheduledAt'] as Timestamp)
+                                          .toDate()
+                                          .toLocal(),
+                                    );
+                              }
+
+                              String recordPetName =
+                                  data['petName'] ??
+                                  petName; // Use actual pet name or fallback
+                              String recordFoodBrand =
+                                  data['foodBrand'] ??
+                                  foodBrand; // Use actual food or fallback
+
+                              return _buildFeedingHistoryItem(
+                                recordPetName,
+                                scheduledTime,
+                                recordFoodBrand,
+                                data['photoUrl'] as String?,
+                              );
+                            },
                           );
                         },
                       ),
-                    ),
-                  ),
-                );
-              },
-              child: Image.network(
-                imageUrl,
-                height: 150, // Fixed height for display in card
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Column(
-                    children: [
-                      const Icon(
-                        Icons.broken_image,
-                        color: Colors.red,
-                        size: 50,
-                      ),
-                      const Text(
-                        'Image failed to load.',
-                        style: TextStyle(color: Colors.red),
-                      ),
                     ],
-                  );
-                },
+                  ),
+                ),
+              ),
+            const SizedBox(height: 20),
+
+            // Feeding Instructions (Existing)
+            if (serviceType == 'Boarding')
+              Card(
+                elevation: 4,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Feeding Instructions',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const Divider(),
+                      _buildDetailRow('Food Brand', foodBrand),
+                      _buildDetailRow('Meals Per Day', mealsPerDay),
+                      if (morningTime.isNotEmpty)
+                        _buildDetailRow(
+                          'Morning Feed',
+                          '$morningTime (${morningGrams}g)',
+                        ),
+                      if (afternoonTime.isNotEmpty)
+                        _buildDetailRow(
+                          'Afternoon Feed',
+                          '$afternoonTime (${afternoonGrams}g)',
+                        ),
+                      if (eveningTime.isNotEmpty)
+                        _buildDetailRow(
+                          'Evening Feed',
+                          '$eveningTime (${eveningGrams}g)',
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            const SizedBox(height: 20),
+
+            // Payment Details (Existing)
+            Card(
+              elevation: 4,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Payment Details',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const Divider(),
+                    _buildDetailRow('Method', paymentMethod),
+                    _buildDetailRow(
+                      'Down Payment',
+                      'PHP ${downPaymentAmount ?? '0.00'}',
+                    ),
+                    _buildDetailRow('Reference Number', referenceNumber),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 20),
+
+            // Vaccination Record (Existing - now with click-to-zoom)
+            if (serviceType == 'Boarding')
+              Card(
+                elevation: 4,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildImageDisplay(
+                        vaccinationRecordImageUrl,
+                        'Vaccination Record (Tap image to zoom)',
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            const SizedBox(height: 20),
+          ],
+        ),
       ),
     );
   }

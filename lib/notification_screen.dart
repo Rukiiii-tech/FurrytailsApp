@@ -1,8 +1,12 @@
+// notification_screen.dart (Full Code)
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
-import 'package:customerap/booking_details_screen.dart'; // Import to navigate to details
+import 'package:customerap/booking_details_screen.dart';
+import 'package:customerap/notification_service.dart'; // Import the Singleton service
+import 'package:flutter_local_notifications/flutter_local_notifications.dart'; // Required for types
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -14,6 +18,9 @@ class NotificationScreen extends StatefulWidget {
 class _NotificationScreenState extends State<NotificationScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   User? _currentUser;
+
+  // LOGIC: State to track previous approvals for the pop-up logic
+  Set<String> _previousApprovedBookingIds = {};
 
   @override
   void initState() {
@@ -27,6 +34,45 @@ class _NotificationScreenState extends State<NotificationScreen> {
         });
       }
     });
+  }
+
+  // LOGIC: Function to check the stream for new approvals and trigger the pop-up
+  void _checkForNewApprovals(List<DocumentSnapshot> newDocs) {
+    // Get the set of currently approved booking IDs
+    final currentApprovedBookingIds = newDocs.map((doc) => doc.id).toSet();
+
+    // Only run comparison logic if we have previous data to compare against
+    if (_previousApprovedBookingIds.isNotEmpty) {
+      // Find new IDs that are in the current set but NOT in the previous set
+      final newApprovalIds = currentApprovedBookingIds.difference(
+        _previousApprovedBookingIds,
+      );
+
+      for (var bookingId in newApprovalIds) {
+        // Find the document for the new approval
+        final newDoc = newDocs.firstWhere((doc) => doc.id == bookingId);
+        final bookingData = newDoc.data() as Map<String, dynamic>;
+
+        String petName =
+            bookingData['petInformation']?['petName'] ?? 'Your Pet';
+        String serviceType = bookingData['serviceType'] ?? 'Service';
+
+        // Check if the new booking is also marked as unread (isRead is false)
+        bool isRead = bookingData['isRead'] ?? false;
+
+        if (!isRead) {
+          // 💥 THE FIX: Call the service's instance method.
+          NotificationService().showBookingApprovedNotification(
+            bookingId: bookingId,
+            serviceType: serviceType,
+            petName: petName,
+          );
+        }
+      }
+    }
+
+    // Update the previous set for the next comparison, ensuring this happens last
+    _previousApprovedBookingIds = currentApprovedBookingIds;
   }
 
   // Method to mark a specific notification as read when it's tapped
@@ -88,7 +134,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
 
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          final docs = snapshot.data!.docs;
+
+          if (!snapshot.hasData || docs.isEmpty) {
+            // IMPORTANT: Initialize the previous set to empty when there's no data
+            _previousApprovedBookingIds = {};
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -115,10 +165,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
             );
           }
 
+          // Call the check function when new data arrives
+          Future.microtask(() => _checkForNewApprovals(docs));
+
           return ListView.builder(
-            itemCount: snapshot.data!.docs.length,
+            itemCount: docs.length,
             itemBuilder: (context, index) {
-              var bookingDoc = snapshot.data!.docs[index];
+              var bookingDoc = docs[index];
               var bookingData = bookingDoc.data() as Map<String, dynamic>;
 
               String petName =
@@ -128,7 +181,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
               bool isRead = bookingData['isRead'] ?? false; // Get read status
 
               String dateApprovedFormatted = '';
-              // Prefer 'approvedAt' timestamp if it exists, otherwise use 'timestamp' (submission date)
+              // Date formatting logic
               if (bookingData.containsKey('approvedAt') &&
                   bookingData['approvedAt'] is Timestamp) {
                 dateApprovedFormatted = DateFormat(
@@ -146,7 +199,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
                 RegExp regExp = RegExp(
                   r"Status changed to Approved by admin at (.*)",
-                ); // Updated to 'Approved'
+                );
                 Match? match = regExp.firstMatch(adminNoteString);
                 if (match != null && match.groupCount > 0) {
                   try {
