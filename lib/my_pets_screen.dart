@@ -6,7 +6,7 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'dart:async'; // ADDED: Required for StreamSubscription
+import 'dart:async';
 
 class MyPetsScreen extends StatefulWidget {
   final bool isModal;
@@ -690,6 +690,9 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
     );
   }
 
+  // ***************************************************************
+  // FIX: CORRECTED _buildDropdownField to prevent duplicate values
+  // ***************************************************************
   Widget _buildDropdownField({
     required String? value,
     required List<String> items,
@@ -698,30 +701,33 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
     required void Function(String?) onChanged,
     String? Function(String?)? validator,
   }) {
-    // To prevent assertion errors on edit, include the current value if it's not
-    // in the hardcoded list. This ensures old/outdated data can still be displayed.
-    final List<String> effectiveItems = [...items];
+    // 1. Start with a mutable copy and enforce uniqueness using a Set
+    final Set<String> uniqueItemsSet = items.toSet();
 
-    // Check if the current value is a custom 'Other:...' value
+    // 2. Determine the display value for the dropdown state
     String? displayValue = value;
     if (value != null && value.startsWith('Other:')) {
-      // If it's a custom breed, ensure 'Other' is selected in the dropdown
+      // If it's a custom 'Other:...' value, we use 'Other' for the dropdown state
       displayValue = 'Other';
     }
 
-    // Include the effective displayValue if it's not in the list
-    if (displayValue != null && !effectiveItems.contains(displayValue)) {
-      effectiveItems.insert(0, displayValue); // Insert the value at the start
-    }
-    // Also, ensure 'Other' is always available if the items list is dynamically loaded
-    if (!effectiveItems.contains('Other')) {
-      effectiveItems.add('Other');
+    // 3. Ensure 'Other' is always available in the set for selection (if not already there)
+    if (!uniqueItemsSet.contains('Other')) {
+      uniqueItemsSet.add('Other');
     }
 
+    // 4. Create the final list for the items parameter
+    final List<String> finalItems = uniqueItemsSet.toList();
+
     return DropdownButtonFormField<String>(
-      value: displayValue, // Use displayValue for the dropdown state
-      items: effectiveItems.map((String item) {
-        return DropdownMenuItem<String>(value: item, child: Text(item));
+      // Use displayValue for the dropdown state
+      value: displayValue,
+      items: finalItems.map((String item) {
+        return DropdownMenuItem<String>(
+          // The value must be unique across all items.
+          value: item,
+          child: Text(item),
+        );
       }).toList(),
       onChanged: onChanged,
       decoration: InputDecoration(
@@ -735,6 +741,7 @@ class _MyPetsScreenState extends State<MyPetsScreen> {
       validator: validator,
     );
   }
+  // ***************************************************************
 
   Widget _buildCheckboxField(
     String title,
